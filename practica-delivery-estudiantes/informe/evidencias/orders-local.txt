@@ -1,0 +1,52 @@
+OK: Sin token: 401
+OK: Token expirado: 401
+OK: Token alterado: 401
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Crear pedido pendiente: 201
+OK: Total real 2 x 45 + 25 = 115, ignora precio del cliente
+OK: Detalle guardado y Authorization reenviado
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Precio historico conservado
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Items vacios: 422 JSON
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Plato de otro restaurante: 422
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Plato no disponible: 422
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Plato inexistente: 422
+OK: No se guardaron pedidos incompletos
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Repartidor no crea pedidos
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Cliente ajeno no ve el pedido
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Lista de cliente filtrada
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Admin lista todos
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Cliente no confirma
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Admin confirma
+OK: Admin pasa a preparacion
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: No retrocede: 409
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Repartidor pone en camino
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Repartidor entrega
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Pedido finalizado no cambia
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Restaurants caido: 502 sin guardar pedido
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Cliente cancela su pendiente
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Cliente no elimina
+[2026-10-29 01:59:24] local.INFO: Peticion orders {"version":"1"} 
+OK: Admin elimina
+OK: Detalle eliminado en cascada
+
+28 comprobaciones de orders correctas (SQLite y HTTP simulado).

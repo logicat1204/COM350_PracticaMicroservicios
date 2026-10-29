@@ -1,3 +1,3 @@
-# PARTE B
-Agregue aqui: config/delivery.php, routes/api.php, migraciones, modelos, middleware VerifyJwt,
-RestaurantsClient, OrderController, Dockerfile y docker/entrypoint.sh (ver guia).
+# Parte B completada
+Se agregaron las rutas, migraciones, modelos, VerifyJwt, RestaurantsClient,
+OrderController, Dockerfile y el script de arranque. Ver README.md en la raiz.

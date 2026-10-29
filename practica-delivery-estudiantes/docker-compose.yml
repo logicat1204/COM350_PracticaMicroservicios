@@ -75,7 +75,6 @@ services:
 
   # =====================
   # MICROSERVICIOS
-  # (orders y deliveries estan comentados: se construyen en las PARTES B y C)
   # =====================
   users:
     build: ./serviceUsers
@@ -95,6 +94,12 @@ services:
       JWT_SECRET: ${JWT_SECRET}
     ports:
       - "3001:3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       mongodb:
         condition: service_healthy
@@ -119,69 +124,87 @@ services:
       JWT_SECRET: ${JWT_SECRET}
     ports:
       - "3002:3002"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       mysql:
         condition: service_healthy
     networks:
       - appnet
 
-  # orders:
-  #   build: ./serviceOrders
-  #   image: delivery-orders:1.0
-  #   container_name: service_orders
-  #   restart: unless-stopped
-  #   env_file:
-  #     - ./serviceOrders/.env
-  #   # Sobrescribe lo del .env para que apunte al contenedor de PostgreSQL
-  #   # y al microservicio de restaurantes (comunicacion entre servicios)
-  #   environment:
-  #     APP_ENV: production
-  #     APP_DEBUG: "false"
-  #     DB_CONNECTION: pgsql
-  #     DB_HOST: postgres
-  #     DB_PORT: 5432
-  #     DB_DATABASE: ${POSTGRES_DB_ORDERS}
-  #     DB_USERNAME: ${POSTGRES_USER}
-  #     DB_PASSWORD: ${POSTGRES_PASSWORD}
-  #     JWT_SECRET: ${JWT_SECRET}
-  #     RESTAURANTS_URL: http://restaurants:3002/api/v1
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     restaurants:
-  #       condition: service_started
-  #   networks:
-  #     - appnet
+  orders:
+    build: ./serviceOrders
+    image: delivery-orders:1.0
+    container_name: service_orders
+    restart: unless-stopped
+    env_file:
+      - ./serviceOrders/.env
+    # Sobrescribe lo del .env para que apunte al contenedor de PostgreSQL
+    # y al microservicio de restaurantes (comunicacion entre servicios)
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB_ORDERS}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      RESTAURANTS_URL: http://restaurants:3002/api/v1
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost:8000/up') === false ? 1 : 0);"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      restaurants:
+        condition: service_started
+    networks:
+      - appnet
 
-  # deliveries:
-  #   build: ./serviceDeliveries
-  #   image: delivery-deliveries:1.0
-  #   container_name: service_deliveries
-  #   restart: unless-stopped
-  #   env_file:
-  #     - ./serviceDeliveries/.env
-  #   # Sobrescribe lo del .env para que apunte al contenedor de PostgreSQL
-  #   # y al microservicio de pedidos (comunicacion entre servicios)
-  #   environment:
-  #     NODE_ENV: production
-  #     PG_HOST: postgres
-  #     PG_PORT: 5432
-  #     PG_USER: ${POSTGRES_USER}
-  #     PG_PASSWORD: ${POSTGRES_PASSWORD}
-  #     PG_DATABASE: ${POSTGRES_DB_DELIVERIES}
-  #     JWT_SECRET: ${JWT_SECRET}
-  #     ORDERS_URL: http://orders:8000/api/v1
-  #   ports:
-  #     - "3004:3004"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     orders:
-  #       condition: service_started
-  #   networks:
-  #     - appnet
+  deliveries:
+    build: ./serviceDeliveries
+    image: delivery-deliveries:1.0
+    container_name: service_deliveries
+    restart: unless-stopped
+    env_file:
+      - ./serviceDeliveries/.env
+    # Sobrescribe lo del .env para que apunte al contenedor de PostgreSQL
+    # y al microservicio de pedidos (comunicacion entre servicios)
+    environment:
+      NODE_ENV: production
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: ${POSTGRES_USER}
+      PG_PASSWORD: ${POSTGRES_PASSWORD}
+      PG_DATABASE: ${POSTGRES_DB_DELIVERIES}
+      JWT_SECRET: ${JWT_SECRET}
+      ORDERS_URL: http://orders:8000/api/v1
+    ports:
+      - "3004:3004"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3004/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orders:
+        condition: service_started
+    networks:
+      - appnet
 
   # =====================
   # API GATEWAY (PROXY INVERSO)
@@ -194,11 +217,20 @@ services:
       - "${NGINX_PORT}:80"
     volumes:
       - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
-      - users
-      - restaurants
-      # - orders        # PARTE B
-      # - deliveries    # PARTE C
+      users:
+        condition: service_healthy
+      restaurants:
+        condition: service_healthy
+      orders:
+        condition: service_healthy
+      deliveries:
+        condition: service_healthy
     networks:
       - appnet
 

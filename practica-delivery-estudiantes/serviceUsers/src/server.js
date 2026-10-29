@@ -14,6 +14,11 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/health', (req, res) => {
+  const connected = require('mongoose').connection.readyState === 1;
+  res.status(connected ? 200 : 503).json({ service: 'users', database: connected ? 'ok' : 'error' });
+});
+
 // rutas (el prefijo /api/v1 coincide con las "location" de nginx)
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/login', loginRoutes);
