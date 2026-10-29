@@ -1,0 +1,16 @@
+Revision del 28/10/2026
+- docker compose config --quiet: correcto
+- composer validate --no-check-publish: correcto
+- php artisan route:list --path=api: 5 rutas
+- php -l en fuentes de la aplicacion: sin errores
+- node --check en los tres servicios: sin errores
+- Coleccion Postman: 46 peticiones, cuerpos JSON y scripts validados
+- Hash bcrypt inicial: coincide con admin123
+- entrypoint.sh: LF
+- Informe PDF: 6 paginas, render revisado
+
+Estas revisiones NO equivalen a construir o ejecutar los contenedores.
+Docker Desktop no inicio. Error observado en su log:
+starting services: initializing Ingest server: listening on
+unix://.../Docker/run/sailor-ingest.sock: rename ...sock ...sock.stale:
+The file cannot be accessed by the system.

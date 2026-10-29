@@ -14,6 +14,13 @@ app.use((req, res, next) => {
 });
 
 // rutas (el prefijo /api/v1 coincide con las "location" de nginx)
+app.get('/health', async (req, res) => {
+  try {
+    await require('./config/dbConnection').query('SELECT 1');
+    res.json({ service: 'restaurants', database: 'ok' });
+  } catch (err) { res.status(503).json({ service: 'restaurants', database: 'error' }); }
+});
+
 app.use('/api/v1/restaurants', restaurantRoutes);
 app.use('/api/v1/dishes', dishRoutes);
 

@@ -3,7 +3,7 @@
     "_postman_id": "451aff37-99d9-4877-8fe4-eb65291880cc",
     "name": "Delivery Sucre - Microservicios",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Flujo completo: login admin -> registrar cliente y repartidor -> ver restaurantes -> crear pedido -> confirmar -> asignar entrega -> cambiar estado -> verificar pedido."
+    "description": "Partes A, B, C.1 y C.2. Ejecutar carpetas 0 a 5 en orden con Collection Runner. Correos unicos por ejecucion; tokens e IDs automaticos. La version 2 se verifica ademas en docker compose logs orders."
   },
   "variable": [
     {
@@ -33,6 +33,30 @@
     {
       "key": "delivery_id",
       "value": ""
+    },
+    {
+      "key": "email_cliente",
+      "value": ""
+    },
+    {
+      "key": "email_repartidor",
+      "value": ""
+    },
+    {
+      "key": "email_otro",
+      "value": ""
+    },
+    {
+      "key": "token_otro",
+      "value": ""
+    },
+    {
+      "key": "pending_order_id",
+      "value": ""
+    },
+    {
+      "key": "dish_creado_id",
+      "value": ""
     }
   ],
   "item": [
@@ -58,7 +82,18 @@
                 ""
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -98,7 +133,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "const j = pm.response.json();",
-                  "if (j.token) pm.collectionVariables.set('token_admin', j.token);"
+                  "if (j.token) pm.collectionVariables.set('token_admin', j.token);",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -127,9 +163,21 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Ana Flores\",\n  \"email\": \"ana@correo.bo\",\n  \"password\": \"ana123\",\n  \"phone\": \"71234567\",\n  \"address\": \"Calle Bolivar 123, Sucre\"\n}"
+              "raw": "{\n  \"name\": \"Ana Flores\",\n  \"email\": \"{{email_cliente}}\",\n  \"password\": \"ana123\",\n  \"phone\": \"71234567\",\n  \"address\": \"Calle Bolivar 123, Sucre\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Sin password en respuesta\", () => pm.expect(pm.response.json()).not.to.have.property(\"password\"));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Registrar repartidor",
@@ -154,7 +202,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Luis Mamani\",\n  \"email\": \"luis@correo.bo\",\n  \"password\": \"luis123\",\n  \"phone\": \"72345678\",\n  \"role\": \"repartidor\"\n}"
+              "raw": "{\n  \"name\": \"Luis Mamani\",\n  \"email\": \"{{email_repartidor}}\",\n  \"password\": \"luis123\",\n  \"phone\": \"72345678\",\n  \"role\": \"repartidor\"\n}"
             }
           },
           "event": [
@@ -164,7 +212,9 @@
                 "type": "text/javascript",
                 "exec": [
                   "const j = pm.response.json();",
-                  "if (j._id) pm.collectionVariables.set('repartidor_id', j._id);"
+                  "if (j._id) pm.collectionVariables.set('repartidor_id', j._id);",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Sin password en respuesta\", () => pm.expect(pm.response.json()).not.to.have.property(\"password\"));"
                 ]
               }
             }
@@ -193,7 +243,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ana@correo.bo\",\n  \"password\": \"ana123\"\n}"
+              "raw": "{\n  \"email\": \"{{email_cliente}}\",\n  \"password\": \"ana123\"\n}"
             }
           },
           "event": [
@@ -203,7 +253,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "const j = pm.response.json();",
-                  "if (j.token) pm.collectionVariables.set('token_cliente', j.token);"
+                  "if (j.token) pm.collectionVariables.set('token_cliente', j.token);",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -232,7 +283,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"luis@correo.bo\",\n  \"password\": \"luis123\"\n}"
+              "raw": "{\n  \"email\": \"{{email_repartidor}}\",\n  \"password\": \"luis123\"\n}"
             }
           },
           "event": [
@@ -242,7 +293,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "const j = pm.response.json();",
-                  "if (j.token) pm.collectionVariables.set('token_repartidor', j.token);"
+                  "if (j.token) pm.collectionVariables.set('token_repartidor', j.token);",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -274,7 +326,18 @@
                 "me"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Listar usuarios (admin)",
@@ -301,7 +364,95 @@
                 "users?role=repartidor"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar otro repartidor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Otro Repartidor\",\n  \"email\": \"{{email_otro}}\",\n  \"password\": \"otro123\",\n  \"role\": \"repartidor\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login otro repartidor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email_otro}}\",\n  \"password\": \"otro123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"token_otro\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -333,7 +484,18 @@
                 "restaurants"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Menu del restaurante 1",
@@ -362,7 +524,18 @@
                 "dishes"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Listar platos disponibles",
@@ -389,7 +562,18 @@
                 "dishes?available=true"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Plato 1 (lo consume orders)",
@@ -417,7 +601,18 @@
                 "1"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Crear restaurante (admin)",
@@ -448,7 +643,18 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"La Taquiña\",\n  \"address\": \"Av. del Maestro 400\",\n  \"phone\": \"4-6440000\",\n  \"category\": \"comida tipica\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Crear plato (admin)",
@@ -479,7 +685,19 @@
               "mode": "raw",
               "raw": "{\n  \"restaurant_id\": 1,\n  \"name\": \"Picante de pollo\",\n  \"description\": \"Pollo en aji amarillo con chuño\",\n  \"price\": 38.5\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"dish_creado_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Actualizar plato (admin)",
@@ -496,7 +714,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/dishes/2",
+              "raw": "{{base_url}}/api/v1/dishes/{{dish_creado_id}}",
               "host": [
                 "{{base_url}}"
               ],
@@ -504,14 +722,25 @@
                 "api",
                 "v1",
                 "dishes",
-                "2"
+                "{{dish_creado_id}}"
               ]
             },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"price\": 32.0\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Crear restaurante como cliente (403)",
@@ -542,7 +771,18 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"X\",\n  \"address\": \"Y\",\n  \"category\": \"Z\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -576,7 +816,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"restaurant_id\": 1,\n  \"delivery_address\": \"Calle Bolivar 123, Sucre\",\n  \"notes\": \"Sin aji\",\n  \"items\": [\n    {\n      \"dish_id\": 1,\n      \"quantity\": 2\n    },\n    {\n      \"dish_id\": 3,\n      \"quantity\": 1\n    }\n  ]\n}"
+              "raw": "{\n  \"restaurant_id\": 1,\n  \"delivery_address\": \"Calle Bolivar 123, Sucre\",\n  \"notes\": \"Sin aji\",\n  \"items\": [\n    {\n      \"dish_id\": 1,\n      \"quantity\": 2,\n      \"unit_price\": 0.01\n    },\n    {\n      \"dish_id\": 3,\n      \"quantity\": 1\n    }\n  ]\n}"
             }
           },
           "event": [
@@ -586,7 +826,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "const j = pm.response.json();",
-                  "if (j.id) pm.collectionVariables.set('order_id', j.id);"
+                  "if (j.id) pm.collectionVariables.set('order_id', j.id);",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Total real 115\", () => pm.expect(Number(pm.response.json().total)).to.eql(115));",
+                  "pm.test(\"Estado pendiente\", () => pm.expect(pm.response.json().status).to.eql(\"pendiente\"));"
                 ]
               }
             }
@@ -621,7 +864,103 @@
               "mode": "raw",
               "raw": "{\n  \"restaurant_id\": 1,\n  \"delivery_address\": \"Calle Bolivar 123\",\n  \"items\": [\n    {\n      \"dish_id\": 4,\n      \"quantity\": 1\n    }\n  ]\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pedido con items vacios (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_id\": 1,\n  \"delivery_address\": \"Calle Bolivar 123\",\n  \"items\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear segundo pedido pendiente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_id\": 1,\n  \"delivery_address\": \"Calle Bolivar 123, Sucre\",\n  \"notes\": \"Sin aji\",\n  \"items\": [\n    {\n      \"dish_id\": 1,\n      \"quantity\": 2,\n      \"unit_price\": 0.01\n    },\n    {\n      \"dish_id\": 3,\n      \"quantity\": 1\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"pending_order_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Mis pedidos (cliente)",
@@ -648,7 +987,18 @@
                 "orders"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Ver pedido",
@@ -676,7 +1026,18 @@
                 "{{order_id}}"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Confirmar pedido (admin)",
@@ -709,7 +1070,18 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"confirmado\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "En preparacion (admin)",
@@ -742,7 +1114,18 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"en_preparacion\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Cliente intenta confirmar (403)",
@@ -775,7 +1158,18 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"confirmado\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Todos los pedidos (admin)",
@@ -802,7 +1196,62 @@
                 "orders?status=en_preparacion"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pedido no puede retroceder (409)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/{{order_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmado\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -836,7 +1285,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"order_id\": \"{{order_id}}\",\n  \"courier_id\": \"{{repartidor_id}}\",\n  \"courier_name\": \"Luis Mamani\",\n  \"notes\": \"Moto roja\"\n}"
+              "raw": "{\n  \"order_id\": {{order_id}},\n  \"courier_id\": \"{{repartidor_id}}\",\n  \"courier_name\": \"Luis Mamani\",\n  \"notes\": \"Moto roja\"\n}"
             }
           },
           "event": [
@@ -846,7 +1295,218 @@
                 "type": "text/javascript",
                 "exec": [
                   "const j = pm.response.json();",
-                  "if (j.id) pm.collectionVariables.set('delivery_id', j.id);"
+                  "if (j.id) pm.collectionVariables.set('delivery_id', j.id);",
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Entrega asignada\", () => pm.expect(pm.response.json().status).to.eql(\"asignado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignar de nuevo (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/deliveries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deliveries"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": {{order_id}},\n  \"courier_id\": \"{{repartidor_id}}\",\n  \"courier_name\": \"Luis Mamani\",\n  \"notes\": \"Moto roja\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignar pedido pendiente (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/deliveries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deliveries"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": {{pending_order_id}},\n  \"courier_id\": \"{{repartidor_id}}\",\n  \"courier_name\": \"Luis Mamani\",\n  \"notes\": \"Moto roja\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asignar pedido inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/deliveries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deliveries"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": 999999999,\n  \"courier_id\": \"{{repartidor_id}}\",\n  \"courier_name\": \"Luis Mamani\",\n  \"notes\": \"Moto roja\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Otro repartidor intenta cambiar (403)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_otro}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/deliveries/{{delivery_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deliveries",
+                "{{delivery_id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"recogido\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Otro repartidor sin entregas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_otro}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/deliveries",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deliveries"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sin entregas ajenas\", () => pm.expect(pm.response.json()).to.have.lengthOf(0));"
                 ]
               }
             }
@@ -877,7 +1537,18 @@
                 "deliveries"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Ver entrega + pedido",
@@ -905,7 +1576,19 @@
                 "{{delivery_id}}"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Incluye pedido\", () => pm.expect(pm.response.json()).to.have.property(\"order\"));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Estado: recogido",
@@ -938,7 +1621,19 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"recogido\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Pedido sincronizado\", () => pm.expect(pm.response.json().orderSync.ok).to.eql(true));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Estado: en_camino",
@@ -971,7 +1666,19 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"en_camino\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Pedido sincronizado\", () => pm.expect(pm.response.json().orderSync.ok).to.eql(true));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Estado: entregado",
@@ -1004,7 +1711,19 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"entregado\"\n}"
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Pedido sincronizado\", () => pm.expect(pm.response.json().orderSync.ok).to.eql(true));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Verificar pedido entregado",
@@ -1032,7 +1751,19 @@
                 "{{order_id}}"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Pedido entregado\", () => pm.expect(pm.response.json().status).to.eql(\"entregado\"));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Entrega del pedido",
@@ -1061,9 +1792,205 @@
                 "{{order_id}}"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entrega no puede retroceder (409)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_repartidor}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/deliveries/{{delivery_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deliveries",
+                "{{delivery_id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"recogido\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
         }
       ]
+    },
+    {
+      "name": "5. Mejoras del gateway C.2",
+      "item": [
+        {
+          "name": "CORS: preflight OPTIONS",
+          "request": {
+            "method": "OPTIONS",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Origin",
+                "value": "http://localhost:5173"
+              },
+              {
+                "key": "Access-Control-Request-Method",
+                "value": "POST"
+              },
+              {
+                "key": "Access-Control-Request-Headers",
+                "value": "authorization,content-type"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));",
+                  "pm.test(\"CORS origen\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"*\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Version 2: mismos pedidos y log version 2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v2/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "orders"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sin token (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"CORS tambien en errores\", () => pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"*\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.info.requestName === \"Estado del gateway\") {",
+          "  const run = Date.now() + \"-\" + Math.random().toString(16).slice(2,8);",
+          "  pm.collectionVariables.set(\"email_cliente\", \"ana-\" + run + \"@correo.bo\");",
+          "  pm.collectionVariables.set(\"email_repartidor\", \"luis-\" + run + \"@correo.bo\");",
+          "  pm.collectionVariables.set(\"email_otro\", \"otro-\" + run + \"@correo.bo\");",
+          "}"
+        ]
+      }
     }
   ]
 }
